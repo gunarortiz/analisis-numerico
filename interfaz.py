@@ -89,6 +89,11 @@ def intersecciones(f, a, b, eps):
         ys.append(f(x_i))
     return intersect, xs, ys, projections
 
+
+
+
+#no se utiliza
+
 def biseccion(a, b, its, f, tol):
     a_orig, b_orig = a,b
     sw = False
@@ -187,6 +192,8 @@ def secante(a, b, its, f, eps, tol):
             x_i1 = a
 
     return x_i1, (True if (f(x_i1) == 0) else False), table
+
+# hasta aqui no se usa
 
 class GUI(tk.Tk):
 
@@ -384,49 +391,3 @@ if __name__ == "__main__":
     MainWindow = GUI()
     MainWindow.bind('<Return>', MainWindow.process)
     MainWindow.mainloop()
-
-
-
-"""
-def biseccion(a, b, its, f):
-    a_orig, b_orig = a,b
-    sw = False
-
-    im_X_m = a_orig
-    while sw == False:
-        table = [[] for i in range(its)]
-        for it in range(its):
-
-            X_m = (Decimal(a) + Decimal(b)) / 2
-
-            res = Decimal(X_m)
-
-            im_a, im_b, im_X_m = f(Decimal(a)), f(Decimal(b)), f(Decimal(X_m))
-
-            table[it] = [str(Fraction(a)) + (' ^+' if im_a > 0 else ' ^-'),
-                         str(Fraction(b)) + (' ^+' if im_b > 0 else ' ^-'),
-                         str(Fraction(X_m)) + (' ^+' if im_X_m > 0 else ' ^-')]
-
-            if Decimal(im_X_m) > 0:
-                b = Decimal(X_m)
-            else:
-                a = Decimal(X_m)
-
-        if abs(round(Decimal(f(res)),2)) <= round(Decimal(0.1),2):
-            sw = True
-        else:
-            b = a_orig
-            a = b_orig
-
-    return Decimal(res), (True if (f(Decimal(res)) == 0) else False)
-"""
-
-"""def prepocess_input(str):
-    in_str = ''
-    for ch in str:
-        if ch == '^':
-            in_str += '**'
-        else:
-            in_str += ch
-
-    return in_str"""

@@ -1,3 +1,5 @@
+from sympy import *
+
 n = int(input("Ingrese el grado del polinomio a evaluar: ")) + 1
 
 matriz = [0.0] * n
@@ -28,8 +30,24 @@ for i in range(1,n):
         matriz[j][i] = ( (matriz[j][i-1]-matriz[j-1][i-1]) / (vector[j]-vector[j-i]))
         print ("matriz[",j,"][",i,"] = ",(matriz[j][i-1]-matriz[j-1][i-1])/(vector[j]-vector[j-i]))
 
+contador = 0
+formula = ""
+
 for i in range(n):
+    formula += "(" + str(matriz[i][i])
+    for j in range(contador):
+        formula += "*" + "(x-("+ str(vector[j]) + "))"
+    formula += ")"
+    formula += "+" if i < n - 1 else ""
+
+    contador = contador + 1
     print (matriz[i])
+
+print(formula)
+
+
+reFormula = solve("-y+"+formula, set = True)
+print(reFormula)
 
 aprx = 0
 mul = 1.0
