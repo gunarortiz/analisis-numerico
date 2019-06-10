@@ -195,6 +195,76 @@ def secante(a, b, its, f, eps, tol):
 
 # hasta aqui no se usa
 
+def diferencias(primer_campo, segundo_campo, tercer_campo):
+    f1 = primer_campo
+    f1 = eval("[" + f1 + "]")
+
+    f2 = segundo_campo
+    f2 = eval("[" + f2 + "]")
+
+    n = len(f1)
+    # n = int(input("Ingrese el grado del polinomio a evaluar: ")) + 1
+
+    matriz = [0.0] * n
+
+    for i in range(n):
+        matriz[i] = [0.0] * n
+
+    vector = [0.0] * n
+
+    print(matriz)
+    print(vector)
+
+    for i in range(n):
+        # x = input("Ingrese el valor de x: ")
+        # y = input("Ingrese el valor de f("+x+"): ")
+        vector[i] = float(f1[i])
+        matriz[i][0] = float(f2[i])
+
+    print(vector)
+    print(matriz)
+
+    punto_a_evaluar = float(tercer_campo)
+
+    for i in range(1, n):
+        for j in range(i, n):
+            print("i = ", i, "    j = ", j)
+            print("(", matriz[j][i - 1], "-", matriz[j - 1][i - 1], ")/(", vector[j], "-", vector[j - i], ")")
+            matriz[j][i] = ((matriz[j][i - 1] - matriz[j - 1][i - 1]) / (vector[j] - vector[j - i]))
+            print("matriz[", j, "][", i, "] = ",
+                  (matriz[j][i - 1] - matriz[j - 1][i - 1]) / (vector[j] - vector[j - i]))
+
+    contador = 0
+    formula = ""
+
+    for i in range(n):
+        formula += "(" + str(matriz[i][i])
+        for j in range(contador):
+            formula += "*" + "(x-(" + str(vector[j]) + "))"
+        formula += ")"
+        formula += "+" if i < n - 1 else ""
+
+        contador = contador + 1
+        print(matriz[i])
+
+    print(formula)
+
+    formula = solve("-y+" + formula, "y")
+    print(formula[0])
+
+    aprx = 0
+    mul = 1.0
+    for i in range(n):
+        mul = matriz[i][i]
+        for j in range(1, i + 1):
+            mul = mul * (punto_a_evaluar - vector[j - 1])
+        aprx = aprx + mul
+
+    print("El valor aproximado de f(", punto_a_evaluar, ") es: ", aprx)
+    return formula[0], aprx, matriz
+
+
+
 class GUI(tk.Tk):
 
     def __init__(self):
@@ -214,8 +284,8 @@ class GUI(tk.Tk):
 
         #Menu de metodos
         self.default_choice = tk.StringVar()
-        self.default_choice.set('Biseccion')
-        self.menu = tk.OptionMenu(self, self.default_choice, 'Biseccion', 'Newton Raphson', 'Secante')
+        self.default_choice.set('Diferencias Divididas')
+        self.menu = tk.OptionMenu(self, self.default_choice, 'Biseccion', 'Newton Raphson', 'Secante', 'Diferencias Divididas')
 
         self.button = tk.Button(self, text='Resolver', cursor='hand1', command=self.process)
 
@@ -223,8 +293,8 @@ class GUI(tk.Tk):
         self.in_str.grid(row=0, column=1, sticky='nsew')
 
         #Valores por defecto del menu row=1
-        self.menu.grid(row=2, column=0, sticky='nsew')
-        self.button.grid(row=2, column=1, sticky='nsew')
+        self.menu.grid(row=3, column=0, sticky='nsew')
+        self.button.grid(row=3, column=1, sticky='nsew')
 
         self.lbl.config(font=("Ubuntu Mono", 30) , bg='white')
         self.in_str.config(font=("Ubuntu Mono", 30), bg='white')
@@ -236,22 +306,27 @@ class GUI(tk.Tk):
         #self.bool_table = False
 
         # Valores por defecto del epsilon y toletancia row=1
-        self.epsilon = tk.Entry(self)
-        self.epsilon.insert(tk.END, '1e-15')
+        self.primer_campo = tk.Entry(self)
+        self.primer_campo.insert(tk.END, '-2,-1,2,3')
         #Ahora son los rangos
         #self.epsilon.insert(tk.END, 'n/a')
 
 
-        self.tolerance = tk.Entry(self)
-        self.tolerance.insert(tk.END, '0.05')
+        self.segundo_campo = tk.Entry(self)
+        self.segundo_campo.insert(tk.END, '4,1,4,9')
+
+        self.tercer_campo = tk.Entry(self)
+        self.tercer_campo.insert(tk.END, "5")
         #ahora son los rangos
         #self.tolerance.insert(tk.END, 'n/a')
 
 
-        self.epsilon.grid(row=1, column=0, sticky='nsew')
-        self.tolerance.grid(row=1, column=1, sticky='nsew')
-        self.epsilon.config(font=("Ubuntu Mono", 30), bg='white')
-        self.tolerance.config(font=("Ubuntu Mono", 30), bg='white')
+        self.primer_campo.grid(row=1, column=0, sticky='nsew')
+        self.segundo_campo.grid(row=1, column=1, sticky='nsew')
+        self.tercer_campo.grid(row=2, column=0, columnspan=3, sticky='nsew')
+        self.primer_campo.config(font=("Ubuntu Mono", 30), bg='white')
+        self.segundo_campo.config(font=("Ubuntu Mono", 30), bg='white')
+        self.tercer_campo.config(font=("Ubuntu Mono", 30), bg='white')
 
         self.r = 1
 
@@ -262,6 +337,8 @@ class GUI(tk.Tk):
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
+
+
 
     def show_tables(self, event=None):
         #p Configurando las tablas
@@ -280,6 +357,8 @@ class GUI(tk.Tk):
             self.labels['tab'].delete(1.0, tk.END)
             self.labels['tab'].destroy()
             self.table_shown = False
+
+
 
     def process(self, event = None):
         self.table_shown = False
@@ -300,16 +379,17 @@ class GUI(tk.Tk):
             else:
                 v.destroy()
 
-        func = prepocess_input(self.in_str.get().lower())
 
-        transformations = (standard_transformations + (implicit_multiplication_application,))
+        #aca carga la funcion
 
-        X = Symbol('x')
-        parsed = parse_expr(func, transformations=transformations)
-        func = lambdify((X), parsed)
-
-        intersect, xs, ys, projections = intersecciones(func, -50, 50, eps)
-        self.out.set(intersect)
+        # if self.in_str.get() != 'Diferencias Divididas':
+        #     func = prepocess_input(self.in_str.get().lower())
+        #     transformations = (standard_transformations + (implicit_multiplication_application,))
+        #     X = Symbol('x')
+        #     parsed = parse_expr(func, transformations=transformations)
+        #     func = lambdify((X), parsed)
+        #     intersect, xs, ys, projections = intersecciones(func, -50, 50, eps)
+        #     self.out.set(intersect)
 
         # row number (starting in 2 because of inputs)
         #self.r = 2
@@ -319,56 +399,69 @@ class GUI(tk.Tk):
         #if(self.epsilon.get() != 'n/a' && self.tolerance.get() != 'n/a'):
         #    a =
 
-        print(intersect)
-        print(projections)
-        if len(intersect) == 0:
-            label = tk.Label(self, text='No se encontraron soluciones')
-            label.grid(row=self.r, columnspan=2, sticky='nsew')
-            label.config(font=("Ubuntu Mono", 30), bg='white')
-            self.labels['lbl0'] = label
-            self.r += 1
 
+        #esto no sirve
+        # print(intersect)
+        # print(projections)
+        # if len(intersect) == 0:
+        #     label = tk.Label(self, text='No se encontraron soluciones')
+        #     label.grid(row=self.r, columnspan=2, sticky='nsew')
+        #     label.config(font=("Ubuntu Mono", 30), bg='white')
+        #     self.labels['lbl0'] = label
+        #     self.r += 1
+        #
         px,py = [],[]
 
         #Calculando
         prev = None
-        for e in intersect:
-            if self.default_choice.get() == 'Biseccion':
-                res, sw, tbl = biseccion(e[0], e[1], iters, func, tol)
-            if self.default_choice.get() == 'Newton Raphson':
-                #res, sw, tbl = newton_raphson(e[0], e[1], iters, parsed, tol)
-                res, sw, tbl = newton_raphson(e[0], e[1], iters, func, tol)
-            if self.default_choice.get() == 'Secante':
-                res, sw, tbl = secante(e[0], e[1], iters, func, 1e-16, tol)
 
-            if prev is not None:
-                prev = round(prev,5)
-            #print('=', prev, round(res,5))
-            if abs(func(res)) > 0.0005 or prev == round(res,5):
-                continue
+        #
+        # if self.default_choice.get() == 'Biseccion':
+        #     res, sw, tbl = biseccion(e[0], e[1], iters, func, tol)
+        # if self.default_choice.get() == 'Newton Raphson':
+        #     #res, sw, tbl = newton_raphson(e[0], e[1], iters, parsed, tol)
+        #     res, sw, tbl = newton_raphson(e[0], e[1], iters, func, tol)
+        # if self.default_choice.get() == 'Secante':
+        #     res, sw, tbl = secante(e[0], e[1], iters, func, 1e-16, tol)
 
-            prev = res
-            self.s_tbl = mostrar_tabla(tbl,self.s_tbl, self.default_choice.get())
-            #print(res, '->', abs(round(func(res), 2)))
-            px.append(res)
-            py.append(0)
+        if self.default_choice.get() == 'Diferencias Divididas':
+            res, aprx, tbl = diferencias(self.primer_campo.get(), self.segundo_campo.get(), self.tercer_campo.get())
 
-            label = tk.Label(self, text='x'+str(self.r-2)+': '+str(res))
-            print(abs(round(func(res), 2)))
-            label.grid(row=self.r, columnspan=2, sticky='W')
-            label.config(font=("Ubuntu Mono", 30))
-            self.labels['lbl' + str(self.r - 2)] = label
+        prev = res
+        self.s_tbl = mostrar_tabla(tbl,self.s_tbl, self.default_choice.get())
+        #print(res, '->', abs(round(func(res), 2)))
+        # px.append(res)
+        # py.append(0)
 
-            self.grid_rowconfigure(self.r, weight=1)
+        tabla = ""
+        for m in range(len(tbl)):
+            tabla += str(tbl[m]) + "\n"
 
-            self.r += 1
+        label = tk.Label(self, text=tabla + '\nFormula'+': '+str(res) + "\nResultado: " + str(aprx), anchor="e")
+        # print(abs(round(func(res), 2)))
+        label.grid(row=4, columnspan=2, sticky='W')
+        label.config(font=("Ubuntu Mono", 20))
+        self.labels['lbl' + str(self.r - 2)] = label
 
-        fig = Figure(figsize=(5,4), dpi = 120)
+        self.grid_rowconfigure(self.r, weight=1)
+
+        self.r += 1
+
+
+
+
+        fig = Figure(figsize=(4,4), dpi = 90)
         a = fig.add_subplot(111)
-        a.plot(xs,ys)
-        a.plot(px,py, 'ro')
-        a.axhline(y=0, linewidth=0.5, color='k')
-        a.axvline(x=0, linewidth=0.5,color='k')
+        #
+        x = np.arange(0., aprx-aprx/2, 1)
+        f = eval(str(res))
+
+        a.plot(f)
+        a.plot([5], [25], 'ro')
+
+        # a.plot(px,py, 'ro')
+        # a.axhline(y=0, linewidth=0.5, color='k')
+        # a.axvline(x=0, linewidth=0.5,color='k')
         canvas = FigureCanvasTkAgg(fig, self)
         canvas.get_tk_widget().grid(row=self.r+1, columnspan=2 , sticky = 'nsew')
 
@@ -380,12 +473,14 @@ class GUI(tk.Tk):
 
         self.labels['graph'] = canvas
 
-        m_tbl = tk.Button(self, text='Mostrar Tabla', cursor='hand1', command=self.show_tables)
-        m_tbl.grid(row=self.r+1, columnspan=2, sticky='nsew')
-        m_tbl.config(font=("Ubuntu Mono", 30), bg='white')
+        #
+        # m_tbl = tk.Button(self, text='Mostrar Tabla', cursor='hand1', command=self.show_tables)
+        # m_tbl.grid(row=self.r+1, columnspan=2, sticky='nsew')
+        # m_tbl.config(font=("Ubuntu Mono", 30), bg='white')
+        #
+        # self.labels['most_tbl'] = m_tbl
+        # self.grid_rowconfigure(self.r+1, weight=1)
 
-        self.labels['most_tbl'] = m_tbl
-        self.grid_rowconfigure(self.r+1, weight=1)
 
 if __name__ == "__main__":
     MainWindow = GUI()

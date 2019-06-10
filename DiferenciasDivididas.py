@@ -1,6 +1,13 @@
 from sympy import *
 
-n = int(input("Ingrese el grado del polinomio a evaluar: ")) + 1
+f1 = "-2,-1,2,3"
+f1 = eval("["+f1+"]")
+
+f2 = "4,1,4,9"
+f2 = eval("["+f2+"]")
+
+n = len(f1)
+#n = int(input("Ingrese el grado del polinomio a evaluar: ")) + 1
 
 matriz = [0.0] * n
 
@@ -13,10 +20,10 @@ print(matriz)
 print(vector)
 
 for i in range(n):
-    x = input("Ingrese el valor de x: ")
-    y = input("Ingrese el valor de f("+x+"): ")
-    vector[i]=float(x)
-    matriz[i][0]=float(y)
+    #x = input("Ingrese el valor de x: ")
+    #y = input("Ingrese el valor de f("+x+"): ")
+    vector[i]=float(f1[i])
+    matriz[i][0]=float(f2[i])
 
 print(vector)    
 print(matriz)
@@ -46,8 +53,8 @@ for i in range(n):
 print(formula)
 
 
-reFormula = solve("-y+"+formula, set = True)
-print(reFormula)
+formula = solve("-y+"+formula, "y")
+print(formula[0])
 
 aprx = 0
 mul = 1.0
